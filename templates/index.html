@@ -1,0 +1,66 @@
+<html>
+	<head>
+		<title>
+			Monsieur Chattly
+		</title>
+	</head>
+	<body>
+	<h1>
+		Monsieur Chattly
+	</h1>
+    <h3 style='color: #ccc;font-size: 30px;'>No message yet..</h3>
+    <div class="message_holder"></div>
+
+    <form action="" method="POST" name='text'>
+      <input type="text" class="username" placeholder="User Name"/>
+      <input type="text" class="message" placeholder="Messages"/>
+      <input type="submit"/>
+    </form>
+    <form action="/clear/" method="post" name='makeclear'>
+    	<button type="submit" name = 'clear' value='clear'>
+    		clear messages
+    	</button>
+    </form>
+
+    	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+    <script type="text/javascript">
+      var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+      socket.on( 'connect', function() {
+        socket.emit( 'my event', {
+          data: 'User Connected'
+        } )
+        var old_mess = {{messages|tojson}}
+        for (var i = 0; i < old_mess.length; i++) {
+        	var msg = old_mess[i]
+			if( typeof msg.user_name !== 'undefined' ) {
+	  			$( 'h3' ).remove()
+	  			$( 'div.stylemessage_holder' ).append( '<div><b ="color: #000">'+msg.user_name+'</b> '+msg.message+'</div>' )
+	  	}
+		}
+        console.log(old_mess)
+        var form = $( 'form' ).on( 'submit', function( e ) {
+        if (e.target.name == 'text'){
+          e.preventDefault()
+          let user_name = $( 'input.username' ).val()
+          let user_input = $( 'input.message' ).val()
+          socket.emit( 'my event', {
+            user_name : user_name,
+            message : user_input
+          } )
+          $( 'input.message' ).val( '' ).focus()
+        } } )
+      } )
+      socket.on( 'my response', function( msg ) {
+        console.log( msg )
+        if( typeof msg.user_name !== 'undefined' ) {
+          $( 'h3' ).remove()
+          $( 'div.message_holder' ).append( '<div><b style="color: #000">'+msg.user_name+'</b> '+msg.message+'</div>' )
+        }
+      })
+    </script>
+
+  </body>
+</html>
